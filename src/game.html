@@ -61,8 +61,8 @@ kbd{font-family:var(--body);font-size:12px;font-weight:700;padding:2px 6px;borde
 
 /* Cockpit */
 .cockpit{display:flex;flex-direction:column;gap:12px;width:100%;margin:0 auto}
-body.playing .cockpit{width:min(100%, max(340px, calc((100vh - 360px) * 2.1818)))}
-@supports (height:100dvh){ body.playing .cockpit{width:min(100%, max(340px, calc((100dvh - 360px) * 2.1818)))} }
+body.playing .cockpit{width:min(100%, max(340px, calc((100vh - 420px) * 2.1818)))}
+@supports (height:100dvh){ body.playing .cockpit{width:min(100%, max(340px, calc((100dvh - 420px) * 2.1818)))} }
 .hud{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:8px 12px 8px 16px}
 .hud-title{display:flex;flex-direction:column;line-height:1.15;min-width:0}
 .hud-title strong{font-size:17px}
@@ -91,6 +91,12 @@ body.playing .cockpit{width:min(100%, max(340px, calc((100vh - 360px) * 2.1818))
 .new-cap{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .new-cap .text-in{font-size:20px;padding:8px 12px;width:12em;max-width:100%}
 .form-note{font-size:13px;color:var(--muted)}
+/* Short laptop screens: briefing, results and pause cards float over the whole window instead of being squeezed into the game area. */
+@media (max-height:820px) and (min-width:701px){
+  .overlay:not(.menu-ov){position:fixed;z-index:20}
+  .trainer .kb{--kw:clamp(26px,calc((100vw - 400px) / 13.2),41px)}
+  .trainer .fingers{height:70px}
+}
 @media (max-width:700px){
   .overlay{position:static;background:none;padding:12px}
   .menu-ov{background:none}
@@ -443,12 +449,13 @@ body.playing .cockpit{width:min(100%, max(340px, calc((100vh - 360px) * 2.1818))
     <div class="gu">
       <h3>How it teaches</h3>
       <ul>
-        <li>Act 1 teaches the home row and the space bar. Act 2 adds the nine busiest letters (E I R U T O N W Y), which cover roughly 70 of the 100 most common English words. Act 3 finishes the alphabet (C M P B V X Q Z), then capitals and the punctuation in real sentences: . , ' ?. Each new key starts with reach drills, then real words, then silly phrases, because typists get fastest on real words.</li>
+        <li>Act 1 teaches the home row, the space bar (with the first words, where it's needed), and E and I, so early words aren't stuck with one vowel. Act 2 adds R U T O N W Y. By the end of Act 2 the captain can type 75 of the 100 most common English words. Act 3 finishes the alphabet (C M P B V X Q Z), then capitals and the punctuation in real sentences: . , ' ?. Each new key starts with reach drills, then real words, then silly phrases, because typists get fastest on real words.</li>
+        <li>The right pinky rests on the ; key but is never asked to type it. Kids almost never need a semicolon, so those practice minutes go to letters.</li>
         <li>Shift is taught the standard way: hold it with the pinky on the opposite hand from the letter. If Caps Lock gets switched on by accident, the game still works and shows a reminder to turn it off.</li>
         <li>Speed medals are optional extras for replays: 5, 8 and 12 words a minute in Acts 1, 2 and 3. They never block progress. Auto speed sets the spud pace from the captain's recent speed.</li>
         <li>Each key and the finger that presses it share a color. As a key gets reliable, its hints fade so eyes stay on the screen. A mistake brings the hint back for a few tries.</li>
         <li>Keys the captain misses most come back more often. After the finale, Candy Runs mix words from every mission and lean on the captain's weakest keys, which makes them good daily practice.</li>
-        <li>Stars reward aim: 3 at 95% or better, 2 at 85%. Missed spuds never end a mission; they return later.</li>
+        <li>Stars reward aim: 3 at 95% or better, 2 at 90%, and 2 stars unlock the next mission. That matches school keyboarding benchmarks, which ask for 90 to 100% accuracy. Missed spuds never end a mission; they return later.</li>
         <li>Short and frequent works best: one or two missions a day, 10 to 15 minutes.</li>
       </ul>
     </div>
@@ -569,42 +576,43 @@ function toolHTML(id, label) {
 /* ---------- Acts and missions ---------- */
 const ACTS = [
   {id:1, name:'Earth to the Moon', from:'Earth', dest:'Moon', medal:5,
-    intro:"ACT 1! The Potato Pirate is racing you to Mars to steal the Candy Vault. First stop: the Moon. You'll learn the home row on the way.",
+    intro:"ACT 1! The Potato Pirate is racing you to Mars to steal the Candy Vault. First stop: the Moon. On the way you'll learn the home row, the space bar, and your first two reach keys.",
     endTip:'Act 1 complete! Next stop: the asteroid, where the Potato Pirate is hiding.',
     sdStart:["Ye'll never take the Moon, Captain {name}!", "En garde, ye candy-cane swinger!"],
     sdKo:"Ye win this round... I'll be waitin' on the asteroid!",
     missions:[
     {name:'Launch Pad', type:'keys', add:'fj', newTool:'cannon',
-      text:'Rest your fingers on the home row: A S D F and J K L ;. Feel the little bumps on F and J? Your pointer fingers live there. Type the letter on each spud pod to fire your marshmallow cannon.'},
+      text:'Rest your fingers on the home row: A S D F and J K L ;. Your right pinky just rests on the ; key. Feel the little bumps on F and J? Your pointer fingers live there. Type the letter on each spud pod to fire your marshmallow cannon.'},
     {name:'Above the Clouds', type:'keys', add:'dk',
       text:'Two new keys for your middle fingers. Reach, press, and slide back home. Aim beats speed.'},
     {name:'Into Orbit', type:'keys', add:'sl',
       text:'Your ring fingers get a turn. Keep the others resting on the home row while they work.'},
-    {name:'First Words', type:'mix', add:'a;', newTool:'jelly',
-      words:'ask sad dad add all fall lad lads flask salad alas lass fads falls asks dads alfalfa',
-      text:'A and ; join the crew, and now you can type real words! Spuds with a word on them need every letter.'},
-    {name:'Satellite Slalom', type:'mix', add:'gh',
-      words:'had has glad flag half hall dash flash shall ash hash gas slash lag flags halls glass haha aha gag sash',
+    {name:'First Words', type:'learn', add:'a ', newTool:['jelly', 'thruster'],
+      drills:['aaa','a a a','as','ad','sad','lad'],
+      words:'ask sad dad add all fall lad lads flask salad fads falls asks dads alfalfa',
+      phrases:['a lad','ask dad','a sad lad','all fall','add a salad','dad asks','a flask','alfalfa salad'],
+      text:'A joins the crew, and so does the space bar. Now you can type real words! Your left pinky presses A. Tap the space bar with either thumb between words to fire your thrusters.'},
+    {name:'Satellite Slalom', type:'learn', add:'gh',
+      drills:['fgf','jhj','fgf','jhj','gh','hg'],
+      words:'had has glad flag half hall dash flash shall ash hash slash lag flags halls glass haha aha gag sash',
+      phrases:['ha ha ha','a glad lad','dad has a flag','half a salad','flash dash','dad aka flash','a lad has a glass'],
       text:'G and H are a little stretch for your pointer fingers. Reach over, press, and slide back home.'},
-    {name:'Thruster Boost', type:'phrases', add:' ', newTool:'thruster',
-      phrases:['a lad','ask dad','a sad lad','a glad lad','half a salad','ha ha ha','alfalfa salad','a lad has a flag','dad aka flash','flash dad dash'],
-      text:'Space bar time! Tap it with either thumb between words. Every tap fires your thrusters.'},
+    {name:'Crater Hop', type:'learn', add:'ei',
+      drills:['ded','kik','ded','kik','ei','ie'],
+      words:'like side hide said slide kid kids fish dish skies sea see idea fleas flea seal eagle giggle giggles jiggle shield glide eggs kale shake fake lake ski skid feel field',
+      phrases:['she sells sea shells','a kid hides kale','fleas like kale','a fish skis','a seal skis a lake','jiggle jiggle','giggle like a seal'],
+      text:'E and I live just above D and K. Reach up with your middle fingers, then hop back home. The Moon is close, so watch out for craters!'},
     {name:'Moon Showdown', type:'showdown', newTool:'cane',
-      lines:['flash','slash','ha ha ha','dad aka flash','a sad salad','alfalfa salad','a lad has a flag'],
+      lines:['ha ha ha','jiggle jiggle','dad aka flash','a fish has a sled','fleas like kale','a sad salad','giggle like a seal'],
       text:'The Potato Pirate landed on the Moon first! Type each line to bonk him with your candy cane. There is no timer. Aim is everything.'}
   ]},
   {id:2, name:'Moon to the Asteroid', from:'Moon', dest:'Asteroid', medal:8,
-    intro:"ACT 2! The Potato Pirate escaped to a giant asteroid with a lake of jello on it. Chase him, and learn the nine busiest letters on the keyboard on the way.",
+    intro:"ACT 2! The Potato Pirate escaped to a giant asteroid with a lake of jello on it. Chase him, and learn seven of the busiest letters on the keyboard on the way.",
     endTip:'Act 2 complete! Next stop: Mars, where the Candy Vault is waiting.',
     trapName:'Jello', trapTitle:'SPLOOSH! The pirate is in the jello!',
     sdStart:["I'm sticky, but I'm still dangerous!", "This asteroid be MINE, Captain {name}!"],
     sdKo:"Ye win AGAIN?! Fine. I'll beat ye to the Candy Vault of Mars!",
     missions:[
-    {name:'Crater Hop', type:'learn', add:'ei',
-      drills:['ded','kik','ded','kik','ei','ie'],
-      words:'like side hide said slide kid kids fish dish skies sea see idea fleas flea seal eagle giggle giggles jiggle shield glide eggs kale shake fake lake ski skid feel field',
-      phrases:['she sells sea shells','a kid hides kale','fleas like kale','a fish skis','a seal skis a lake','jiggle jiggle','giggle like a seal'],
-      text:'E and I live just above D and K. Reach up with your middle fingers, then hop back home. Watch out for craters!'},
     {name:'Space Slugs', type:'learn', add:'ru',
       drills:['frf','juj','frf','juj','ru','ur'],
       words:'slug slugs rude dude fur rug huge sure rush fries laser lasers lure sugar radar fudge ugh shrug hug jug jar air fire red ride rider ruler surf hurl glue',
@@ -662,7 +670,7 @@ const ACTS = [
       last:'marshmallow cannon',
       text:'Two keys on the bottom row. Your left middle finger reaches down to C, and your right pointer reaches down to M. Now you can finally type MARSHMALLOW.'},
     {name:'P Is for Pirate', type:'learn', add:'pb',
-      drills:[';p;','fbf',';p;','fbf','pb','bp'],
+      drills:['ppp','fbf','pop','bib','pb','bp'],
       words:'pirate pirates potato potatoes spud spuds peel pop plop bump bonk burp burps booger boogers bubble bubbles banana bananas bacon pancake pancakes pickle pickles planet planets spaceship pepperoni pants underpants robot beep boop',
       phrases:['pickle burp','beep boop beep','bubble pop','a spud in underpants','bonk the pirate','pancakes on mars','a banana spaceship'],
       last:'potato pirate',
@@ -685,7 +693,7 @@ const ACTS = [
       last:'Captain {name}',
       text:'Capital letters! Hold SHIFT, then press the letter. Use the pinky on the OTHER hand: left-hand letters get the right SHIFT, right-hand letters get the left SHIFT. Names of planets and people start with a capital.'},
     {name:'Sentence Storm', type:'learn', add:".,'?", noOld:true, pattern:'wwpwwpwwpwwp',
-      drills:['l.l','k,k',";';",'l.l','k,k',";';"],
+      drills:['l.l','k,k',"it's",'l.l','k,k',"I'm"],
       words:"don't can't won't it's I'm you're let's that's who's what's Yes. No. Huh? Why? Okay. Arrr. Oops. Hmm?",
       phrases:['Is that a spud?',"I'm not a couch potato.","Yes, I'm sure.",'Who tooted?',"Don't lick the moon.",'Mars, here we come.','Can a potato swim?'],
       last:'Dad is a rock star.',
@@ -711,7 +719,7 @@ const MISSIONS = [];
     if (!act.missions) continue;
     act.missions.forEach((m, i) => {
       if (m.add) learned += m.add + (m.add.includes('?') && !learned.includes('/') ? '/' : '');
-      m.act = act; m.num = i + 1; m.id = act.id + '-' + (i + 1); m.pool = learned.split('');
+      m.act = act; m.num = i + 1; m.id = m.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'); m.pool = learned.split('');
       m.words = m.words ? m.words.split(' ') : [];
       m.olderWords = seenWords.filter(w => !m.words.includes(w) && [...w].every(ch => canType(ch, m.pool)));
       seenWords.push(...m.words);
@@ -761,10 +769,21 @@ const SAVE_KEY = 'pp2-save';
 let SAVE = {v:2, sound:true, active:null, order:[], profiles:{}};
 function newProfile(name) {
   const id = 'c' + Date.now().toString(36) + Math.floor(Math.random() * 1e5).toString(36);
-  return {id, name, speed:'auto', stars:{}, medals:{}, wpm:{}, recent:[], unlockAll:false, keys:{}, time:{}, spelling:'', hintsAlways:false, flown:0, candy:{runs:0, best:0}};
+  return {id, name, speed:'auto', stars:{}, medals:{}, wpm:{}, recent:[], unlockAll:false, keys:{}, time:{}, spelling:'', hintsAlways:false, flown:0, candy:{runs:0, best:0}, ids2:true};
+}
+/* Mission ids used to be "act-number" (e.g. "2-1"); they are now names, so reordering missions can't scramble saved stars. */
+const OLD_IDS = {'1-1':'launch-pad','1-2':'above-the-clouds','1-3':'into-orbit','1-4':'first-words','1-5':'satellite-slalom','1-7':'moon-showdown',
+  '2-1':'crater-hop','2-2':'space-slugs','2-3':'tater-tot-toot','2-4':'ninja-nebula','2-5':'the-wiggly-yeti','2-6':'combo-comets','2-7':'meteor-shower','2-8':'jello-lake','2-9':'asteroid-showdown',
+  '3-1':'marshmallow-meteors','3-2':'p-is-for-pirate','3-3':'galaxy-vortex','3-4':'zigzag-quasar','3-5':'gumdrop-shield','3-6':'sentence-storm','3-7':'chocolate-river','3-8':'mars-showdown','3-9':'the-candy-vault'};
+function migrateIds(map) {
+  const out = {};
+  for (const k in map) { if (/^\d-\d$/.test(k)) { if (OLD_IDS[k]) out[OLD_IDS[k]] = map[k]; } else out[k] = map[k]; }
+  return out;
 }
 function normalizeProfile(p) {
-  return Object.assign({speed:'slow', stars:{}, medals:{}, wpm:{}, recent:[], unlockAll:false, keys:{}, time:{}, spelling:'', hintsAlways:false, flown:0, candy:{runs:0, best:0}}, p);
+  p = Object.assign({speed:'slow', stars:{}, medals:{}, wpm:{}, recent:[], unlockAll:false, keys:{}, time:{}, spelling:'', hintsAlways:false, flown:0, candy:{runs:0, best:0}}, p);
+  if (!p.ids2) { p.stars = migrateIds(p.stars); p.medals = migrateIds(p.medals); p.wpm = migrateIds(p.wpm); p.ids2 = true; }
+  return p;
 }
 const P = () => SAVE.profiles[SAVE.active] || null;
 function persist() { store.set(SAVE_KEY, SAVE); }
@@ -2494,6 +2513,7 @@ function candyRunMission() {
 }
 function menuGo() { if (allDone()) openBrief(candyRunMission()); else openBrief(nextMission()); }
 function capHTML(k) {
+  if (k === ' ') return '<div class="bkey" style="--fc:var(--f-thumb)"><span class="cap wide">SPACE</span><span class="bk-label">either thumb</span></div>';
   if (k === '\u21e7') return ['left pinky', 'right pinky'].map(a => '<div class="bkey" style="--fc:var(--f-pinky)"><span class="cap wide">SHIFT</span><span class="bk-label">' + a + '</span></div>').join('');
   const i = keyInfo(k), f = FINGERS[FMAP[i.base]];
   const label = i.shift ? 'SHIFT + ' + f.label : f.label + (PNAME[k] ? ' (' + PNAME[k] + ')' : '');
@@ -2542,7 +2562,7 @@ function openBrief(m) {
   $('#bName').textContent = m.name;
   $('#bIntro').hidden = !(m.num === 1 && m.act.intro && !G.homework);
   $('#bIntro').textContent = m.act.intro || '';
-  $('#bTool').innerHTML = m.newTool ? toolHTML(m.newTool) : '';
+  $('#bTool').innerHTML = [].concat(m.newTool || []).map(t => toolHTML(t)).join('');
   let keys = '';
   const wordChips = list => '<div class="bwords">' + list.map(w => '<span>' + escapeHTML(w) + '</span>').join('') + '</div>';
   if (m.type === 'keys' || m.type === 'mix' || m.type === 'learn') {
@@ -2605,7 +2625,7 @@ function showResults() {
   G.mode = 'results';
   const m = G.mission, p = P();
   const keys = G.correct + G.wrong, aim = keys ? G.correct / keys : 1, pct = Math.round(aim * 100);
-  const stars = aim >= 0.95 ? 3 : aim >= 0.85 ? 2 : 1;
+  const stars = aim >= 0.95 ? 3 : aim >= 0.9 ? 2 : 1;
   const wpm = G.typeT > 5 ? (G.correct / 5) / (G.typeT / 60) : 0;
   let prev = 0, medal = false, newMedal = false;
   if (!G.homework) {
@@ -2652,7 +2672,7 @@ function showResults() {
   if (!G.homework && stars >= 2) html += medal ? ' <span class="new-best">' + (newMedal ? 'You earned the speed medal!' : 'Speed medal!') + '</span>' : ' The speed medal is at ' + m.act.medal + ' words a minute, if you want to try for it.';
   if (next && !nextOpen) html += ' Get 2 stars to unlock the next mission.';
   $('#rTip').innerHTML = html;
-  $('#rTool').innerHTML = (nextOpen && next.newTool) ? toolHTML(next.newTool, 'Unlocked for the next mission') : '';
+  $('#rTool').innerHTML = nextOpen ? [].concat(next.newTool || []).map(t => toolHTML(t, 'Unlocked for the next mission')).join('') : '';
   const prim = $('#rPrimary');
   if (nextOpen) { prim.dataset.act = 'next'; prim.innerHTML = 'Next mission <kbd>Enter</kbd>'; show('#rAgain', true); }
   else if (isSd && stars >= 2) { prim.dataset.act = 'map'; prim.innerHTML = 'Mission map <kbd>Enter</kbd>'; show('#rAgain', true); }
