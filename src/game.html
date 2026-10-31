@@ -140,6 +140,8 @@ body.playing .cockpit{width:min(100%, max(340px, calc((100vh - 420px) * 2.1818))
 .rstats dt{font-size:11px;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:var(--muted)}
 .rstats dd{margin:0;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
 .new-best{color:var(--gold);font-weight:700}
+.unlocked{margin:0;font-weight:700;color:var(--gold);border:2px solid var(--gold);border-radius:12px;padding:8px 12px}
+.unlocked .eyebrow{color:var(--gold)}
 
 /* Trainer */
 .trainer{display:grid;grid-template-columns:auto auto auto;grid-template-areas:"cue cue cue" "lh kb rh";justify-content:center;align-items:end;gap:10px 18px}
@@ -307,12 +309,11 @@ body.playing .cockpit{width:min(100%, max(340px, calc((100vh - 420px) * 2.1818))
     <div class="controls">
       <label class="field" for="captainSel">Captain <select id="captainSel"></select></label>
       <button class="btn ghost small hide-play" id="newCapBtn" type="button">New captain</button>
-      <label class="field" for="speed">Speed
+      <label class="field" for="speed">Level
         <select id="speed">
-          <option value="auto">Auto</option>
-          <option value="slow">Slow</option>
-          <option value="medium">Medium</option>
-          <option value="fast">Fast</option>
+          <option value="cadet">Cadet (easiest)</option>
+          <option value="pilot">Pilot</option>
+          <option value="ace">Ace (fastest)</option>
         </select>
       </label>
       <button class="btn ghost small" id="soundBtn" type="button" aria-pressed="true">Sound on</button>
@@ -449,13 +450,14 @@ body.playing .cockpit{width:min(100%, max(340px, calc((100vh - 420px) * 2.1818))
     <div class="gu">
       <h3>How it teaches</h3>
       <ul>
-        <li>Act 1 teaches the home row, the space bar (with the first words, where it's needed), and E and I, so early words aren't stuck with one vowel. Act 2 adds R U T O N W Y. By the end of Act 2 the captain can type 75 of the 100 most common English words. Act 3 finishes the alphabet (C M P B V X Q Z), then capitals and the punctuation in real sentences: . , ' ?. Each new key starts with reach drills, then real words, then silly phrases, because typists get fastest on real words.</li>
+        <li>Act 1 goes one small step at a time: home-row keys a pair at a time, then all of them mixed, then the space bar with 2- and 3-letter words, then two-word phrases, then G H and E I. Act 2 adds R U T O N W Y. By the end of Act 2 the captain can type 75 of the 100 most common English words. Act 3 finishes the alphabet (C M P B V X Q Z), then capitals and the punctuation in real sentences: . , ' ?. Every new key goes the same way: single letters, then short words, then longer words, with phrases last.</li>
         <li>The right pinky rests on the ; key but is never asked to type it. Kids almost never need a semicolon, so those practice minutes go to letters.</li>
         <li>Shift is taught the standard way: hold it with the pinky on the opposite hand from the letter. If Caps Lock gets switched on by accident, the game still works and shows a reminder to turn it off.</li>
-        <li>Speed medals are optional extras for replays: 5, 8 and 12 words a minute in Acts 1, 2 and 3. They never block progress. Auto speed sets the spud pace from the captain's recent speed.</li>
+        <li>Speed medals are optional extras for replays: 5, 8 and 12 words a minute in Acts 1, 2 and 3. They never block progress.</li>
+        <li>Level (top of the page) sets the pressure. Cadet sends one spud at a time and freezes it once the captain starts typing, so there's never a rush mid-word. Pilot allows two spuds and a little speed; Ace is fast. The results screen suggests moving up when missions look easy, but it's a grown-up's call.</li>
         <li>Each key and the finger that presses it share a color. As a key gets reliable, its hints fade so eyes stay on the screen. A mistake brings the hint back for a few tries.</li>
         <li>Keys the captain misses most come back more often. After the finale, Candy Runs mix words from every mission and lean on the captain's weakest keys, which makes them good daily practice.</li>
-        <li>Stars reward aim: 3 at 95% or better, 2 at 90%, and 2 stars unlock the next mission. That matches school keyboarding benchmarks, which ask for 90 to 100% accuracy. Missed spuds never end a mission; they return later.</li>
+        <li>Stars reward aim: 3 at 95% or better, 2 at 85%, and 2 stars unlock the next mission. A mission the captain has already played stays open. Missed spuds never end a mission; they return later.</li>
         <li>Short and frequent works best: one or two missions a day, 10 to 15 minutes.</li>
       </ul>
     </div>
@@ -587,21 +589,23 @@ const ACTS = [
       text:'Two new keys for your middle fingers. Reach, press, and slide back home. Aim beats speed.'},
     {name:'Into Orbit', type:'keys', add:'sl',
       text:'Your ring fingers get a turn. Keep the others resting on the home row while they work.'},
-    {name:'First Words', type:'learn', add:'a ', newTool:['jelly', 'thruster'],
-      drills:['aaa','a a a','as','ad','sad','lad'],
-      words:'ask sad dad add all fall lad lads flask salad fads falls asks dads alfalfa',
-      phrases:['a lad','ask dad','a sad lad','all fall','add a salad','dad asks','a flask','alfalfa salad'],
-      text:'A joins the crew, and so does the space bar. Now you can type real words! Your left pinky presses A. Tap the space bar with either thumb between words to fire your thrusters.'},
-    {name:'Satellite Slalom', type:'learn', add:'gh',
-      drills:['fgf','jhj','fgf','jhj','gh','hg'],
-      words:'had has glad flag half hall dash flash shall ash hash slash lag flags halls glass haha aha gag sash',
-      phrases:['ha ha ha','a glad lad','dad has a flag','half a salad','flash dash','dad aka flash','a lad has a glass'],
-      text:'G and H are a little stretch for your pointer fingers. Reach over, press, and slide back home.'},
-    {name:'Crater Hop', type:'learn', add:'ei',
-      drills:['ded','kik','ded','kik','ei','ie'],
+    {name:'Pinky Patrol', type:'keys', add:'a', freshShare:0.35,
+      text:"A belongs to your left pinky, the smallest finger on the crew. This mission mixes every home-row key you know: A S D F and J K L. Keep all your fingers resting on their home keys, and only move the one that's pressing."},
+    {name:'First Words', type:'learn', add:' ', newTool:['jelly', 'thruster'], drills:[], trail:' ',
+      words:'as ad add all ask sad dad lad fad fall dads asks', phrases:[], pattern:'wwwwwwwwwwww',
+      text:'Real words! Spuds with a word on them need every letter. After each word, tap the space bar with your thumb to finish it off and fire your thrusters. One spud at a time, and it waits for you once you start.'},
+    {name:'Space Walk', type:'learn', add:'', drills:[], trail:' ', tag:'Phrases',
+      words:'as ad all ask sad dad lad', pattern:'wwwpppppppp',
+      phrases:['a lad','a fad','ask dad','all fall','dad asks','sad dads','all lads','a sad lad','ask a lad','add salad'],
+      sample:['a lad','ask dad','all fall','sad dads'],
+      text:'Two words at a time. Type the first word, tap the space bar, then type the second. Take your time: the spud waits once you start typing it.'},
+    {name:'Satellite Slalom', type:'learn', add:'gh', letters:8, drills:['fgf','jhj'], trail:' ', pattern:'wwwwwwwww',
+      words:'had has glad flag half hall dash flash shall ash hash slash lag flags halls glass haha aha gag sash', phrases:[],
+      text:'G and H are a little stretch for your pointer fingers. First they come one at a time, then in words. Reach over, press, and slide back home.'},
+    {name:'Crater Hop', type:'learn', add:'ei', letters:6, drills:['ded','kik','ded','kik'], trail:' ', pattern:'wwwwwwwwppp',
       words:'like side hide said slide kid kids fish dish skies sea see idea fleas flea seal eagle giggle giggles jiggle shield glide eggs kale shake fake lake ski skid feel field',
-      phrases:['she sells sea shells','a kid hides kale','fleas like kale','a fish skis','a seal skis a lake','jiggle jiggle','giggle like a seal'],
-      text:'E and I live just above D and K. Reach up with your middle fingers, then hop back home. The Moon is close, so watch out for craters!'},
+      phrases:['a fish skis','see a seal','she said hi','a fake lake','a kid skis','jiggle jiggle'],
+      text:'E and I live just above D and K. Reach up with your middle fingers, then hop back home. Letters first, then words, and a few short phrases at the very end. The Moon is close, so watch out for craters!'},
     {name:'Moon Showdown', type:'showdown', newTool:'cane',
       lines:['ha ha ha','jiggle jiggle','dad aka flash','a fish has a sled','fleas like kale','a sad salad','giggle like a seal'],
       text:'The Potato Pirate landed on the Moon first! Type each line to bonk him with your candy cane. There is no timer. Aim is everything.'}
@@ -769,7 +773,7 @@ const SAVE_KEY = 'pp2-save';
 let SAVE = {v:2, sound:true, active:null, order:[], profiles:{}};
 function newProfile(name) {
   const id = 'c' + Date.now().toString(36) + Math.floor(Math.random() * 1e5).toString(36);
-  return {id, name, speed:'auto', stars:{}, medals:{}, wpm:{}, recent:[], unlockAll:false, keys:{}, time:{}, spelling:'', hintsAlways:false, flown:0, candy:{runs:0, best:0}, ids2:true};
+  return {id, name, level:'cadet', stars:{}, medals:{}, wpm:{}, recent:[], unlockAll:false, keys:{}, time:{}, spelling:'', hintsAlways:false, flown:0, candy:{runs:0, best:0}, ids2:true};
 }
 /* Mission ids used to be "act-number" (e.g. "2-1"); they are now names, so reordering missions can't scramble saved stars. */
 const OLD_IDS = {'1-1':'launch-pad','1-2':'above-the-clouds','1-3':'into-orbit','1-4':'first-words','1-5':'satellite-slalom','1-7':'moon-showdown',
@@ -781,7 +785,7 @@ function migrateIds(map) {
   return out;
 }
 function normalizeProfile(p) {
-  p = Object.assign({speed:'slow', stars:{}, medals:{}, wpm:{}, recent:[], unlockAll:false, keys:{}, time:{}, spelling:'', hintsAlways:false, flown:0, candy:{runs:0, best:0}}, p);
+  p = Object.assign({level:'cadet', stars:{}, medals:{}, wpm:{}, recent:[], unlockAll:false, keys:{}, time:{}, spelling:'', hintsAlways:false, flown:0, candy:{runs:0, best:0}}, p);
   if (!p.ids2) { p.stars = migrateIds(p.stars); p.medals = migrateIds(p.medals); p.wpm = migrateIds(p.wpm); p.ids2 = true; }
   return p;
 }
@@ -806,15 +810,18 @@ const allDone = () => { const p = P(); return !!p && MISSIONS.every(m => (p.star
 const fmt = t => t.replace(/\{name\}/g, capName());
 function dateKey(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 
-const SPEEDS = { slow:{letter:9, per:1.8}, medium:{letter:6.5, per:1.3}, fast:{letter:4.6, per:0.95} };
+/* Levels. letter/per: seconds of flight for a spud (base + per extra character).
+   pods: most spuds on screen at once. started: how fast a spud keeps moving once the captain starts typing it
+   (0 = it freezes and waits). ramp: how much spuds may speed up during a streak. */
+const LEVELS = {
+  cadet:{name:'Cadet', letter:10, per:4.5, pods:1, started:0, ramp:1},
+  pilot:{name:'Pilot', letter:9, per:1.8, pods:2, started:0.25, ramp:1.15, onePhrase:true},
+  ace:{name:'Ace', letter:6.5, per:1.3, pods:3, started:1, ramp:1.35}
+};
 const MAXPODS = { keys:[2,3,3], mix:[2,2,3], learn:[2,2,3], phrases:[1,1,2], words:[1,2,2], combo:[2,3,3], storm:[2,3,3], candy:[2,2,3] };
 function recentWpm() { const r = ((P() && P().recent) || []).slice(-3); return r.length ? r.reduce((a, b) => a + b, 0) / r.length : 0; }
-function speedKey() {
-  const p = P(); if (!p) return 'slow';
-  if (p.speed !== 'auto') return SPEEDS[p.speed] ? p.speed : 'slow';
-  const w = recentWpm(); return w >= 16 ? 'fast' : w >= 10 ? 'medium' : 'slow';
-}
-const speedIdx = () => ({slow:0, medium:1, fast:2})[speedKey()] || 0;
+function levelKey() { const p = P(); return p && LEVELS[p.level] ? p.level : 'cadet'; }
+const LV = () => LEVELS[levelKey()];
 
 /* ---------- Audio ---------- */
 let AC = null, MASTER = null, NOISE = null;
@@ -959,10 +966,10 @@ function wpick(items, wfn) {
 }
 
 /* ---------- Mission queues ---------- */
-function pickLetter(fresh, review, q) {
+function pickLetter(fresh, review, q, share) {
   let k, tries = 0;
   do {
-    k = (!review.length || Math.random() < 0.55) ? pick(fresh) : wpick(review, weightOf);
+    k = (!review.length || Math.random() < (share || 0.55)) ? pick(fresh) : wpick(review, weightOf);
     tries++;
   } while (tries < 10 && q.length >= 2 && q[q.length - 1] === k && q[q.length - 2] === k);
   return k;
@@ -1010,15 +1017,30 @@ function buildQueue(m) {
   }
   const fresh = (m.add || '').split('').filter(k => k !== ' ');
   if (m.type === 'learn') {
-    const q = m.drills.slice(), next = wordPicker(m, fresh), ph = shuffle(fillLines(m.phrases));
-    for (const c of (m.pattern || 'wwwpwwwpwwwp')) q.push(c === 'w' ? next() : (ph.pop() || next()));
+    /* Easy to hard: single letters for the new keys, reach drills, words shortest first, phrases last. */
+    const freshL = fresh.filter(ch => /^[a-z]$/.test(ch));
+    const reviewL = m.pool.filter(k => /^[a-z]$/.test(k) && !freshL.includes(k));
+    const nL = m.letters != null ? m.letters : (freshL.length ? 6 : 0);
+    const q = [];
+    freshL.forEach(k => { if (q.length < nL) q.push(k); });
+    while (q.length < nL) q.push(pickLetter(freshL, reviewL, q));
+    q.push(...(m.drills || []));
+    const pat = m.pattern || 'wwwpwwwpwwwp';
+    const nP = [...pat].filter(c => c === 'p').length, nW = pat.length - nP;
+    const next = wordPicker(m, fresh), byLen = (a, b) => a.length - b.length;
+    const ph = shuffle(fillLines(m.phrases || [])).slice(0, nP).sort(byLen);
+    let words = [];
+    for (let i = 0; i < nW + (nP - ph.length); i++) words.push(next());
+    words.sort(byLen);
+    if (m.trail) words = words.map(w => w + m.trail);
+    q.push(...words, ...ph);
     const last = m.last && fillName(m.last);
     if (last) q.push(last);
     return q;
   }
   const review = m.pool.filter(k => !fresh.includes(k) && k !== ' '), q = [];
   fresh.forEach(k => q.push(k)); fresh.forEach(k => q.push(k));
-  if (m.type === 'keys') { while (q.length < 24) q.push(pickLetter(fresh, review, q)); return q; }
+  if (m.type === 'keys') { while (q.length < 24) q.push(pickLetter(fresh, review, q, m.freshShare)); return q; }
   const next = wordPicker(m, fresh);
   for (const c of 'wwlwwlwwlwwlwwlw') q.push(c === 'w' ? next() : pickLetter(fresh, review, q));
   return q;
@@ -1026,7 +1048,7 @@ function buildQueue(m) {
 
 /* ---------- Flight ---------- */
 function podDuration(target) {
-  const s = SPEEDS[speedKey()];
+  const s = LV();
   return (s.letter + s.per * Math.max(0, target.length - 1)) / G.speedF;
 }
 function podPos(pod) {
@@ -1061,7 +1083,7 @@ function spawnPod() {
   const target = G.queue.shift();
   const port = piratePort();
   let ly = 0;
-  for (let i = 0; i < 8; i++) { ly = 105 + Math.random() * (H - 200); if (Math.abs(ly - G.lastLane) > 80) break; }
+  for (let i = 0; i < 8; i++) { ly = 180 + Math.random() * (H - 280); if (Math.abs(ly - G.lastLane) > 70) break; }
   G.lastLane = ly;
   G.pods.push({id: ++G.uid, target, px:port.x, py:port.y, ly, p:0, dur:podDuration(target), typed:0, doomed:false, wob:Math.random() * 6.28});
   burst(port.x, port.y, [C.cream, C.muted], 6, 90);
@@ -1138,7 +1160,7 @@ function onKey(k) {
   pod.typed++;
   const done = pod.typed >= pod.target.length;
   G.lock = done ? null : pod.id;
-  if (k === ' ') boost(); else fire(pod, done, k);
+  if (k === ' ') { boost(); if (done) fire(pod, true, k); } else fire(pod, done, k);
   good(k);
 }
 function good(k) {
@@ -1147,7 +1169,7 @@ function good(k) {
   if (G.tempHint[i.base]) G.tempHint[i.base]--;
   if (i.shift) { if (G.tempHint['\u21e7']) G.tempHint['\u21e7']--; G.shieldPop = 0.5; }
   G.correct++; G.streak++; G.best = Math.max(G.best, G.streak);
-  if (G.kind === 'flight' && G.streak % 6 === 0) G.speedF = Math.min(1.35, G.speedF * 1.05);
+  if (G.kind === 'flight' && G.streak % 6 === 0) G.speedF = Math.min(LV().ramp, G.speedF * 1.05);
   if (G.streak % 10 === 0) { if (G.kind === 'flight') startTrick(); else comboShowdown(); }
   if (KEYEL[i.base]) flash(KEYEL[i.base], 'hit');
   if (i.shift) { const sk = KEYEL['\u21e7' + shiftSide(i.base)]; if (sk) flash(sk, 'hit'); }
@@ -1431,18 +1453,22 @@ function updateFinale(dt) {
   }
   if (G.finT > 3.4) showResults();
 }
+const isPhrase = t => t.trim().includes(' ');
 function updatePlay(dt) {
-  const live = livePods().length;
+  const lv = LV(), liveList = livePods(), live = liveList.length;
   const type = G.mission.type;
-  const max = (MAXPODS[type] || MAXPODS.keys)[speedIdx()];
+  const max = Math.min(lv.pods, (MAXPODS[type] || MAXPODS.keys)[2]);
   G.spawnT -= dt;
   if (live === 0) G.spawnT = Math.min(G.spawnT, 0.7);
-  if (G.queue.length && live < max && G.spawnT <= 0) {
+  /* Pilot: never two phrases on screen together. */
+  const phraseBusy = lv.onePhrase && live > 0 && G.queue.length && (isPhrase(G.queue[0]) || liveList.some(pd => isPhrase(pd.target)));
+  if (G.queue.length && live < max && G.spawnT <= 0 && !phraseBusy) {
     const t = spawnPod();
     G.spawnT = podDuration(t) * 0.45;
   }
   const slow = G.sugarT > 0 ? 0.7 : 1;
-  for (const pod of G.pods) if (!pod.doomed) pod.p += dt * slow / pod.dur;
+  /* Once the captain starts typing a spud it freezes (Cadet) or crawls (Pilot). */
+  for (const pod of G.pods) if (!pod.doomed) pod.p += dt * slow * (pod.typed > 0 ? lv.started : 1) / pod.dur;
   for (const pod of G.pods.slice()) if (!pod.doomed && pod.p >= 1) bonk(pod);
 }
 function updateShots(dt) {
@@ -1896,12 +1922,13 @@ function drawBubble(anchor, side) {
   ctx.font = '700 18px ' + BODY_FONT;
   const lines = wrapLines(b.text, 240);
   const bw = Math.max(...lines.map(l => ctx.measureText(l).width)) + 28, bh = lines.length * 23 + 18;
-  const low = side === 'low';
-  const x = side === 'left' ? clamp(h.x - bw - 10, 8, W - bw - 8) : clamp(h.x + (low ? 70 : 30), 8, W - bw - 8);
-  const y = low ? clamp(h.y - bh / 2 + 10, 8, H - bh - 8) : clamp(h.y - 110 - bh * 0.5, 8, H - bh - 8);
+  const low = side === 'low', top = side === 'top';
+  const x = top ? clamp(h.x - 70, 8, W - bw - 8) : side === 'left' ? clamp(h.x - bw - 10, 8, W - bw - 8) : clamp(h.x + (low ? 70 : 30), 8, W - bw - 8);
+  const y = top ? 8 : low ? clamp(h.y - bh / 2 + 10, 8, H - bh - 8) : clamp(h.y - 110 - bh * 0.5, 8, H - bh - 8);
   rrect(x, y, bw, bh, 14); ctx.fillStyle = C.cream; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = C.ink; ctx.stroke();
   let a1, a2, tip;
   if (low) { a1 = [x + 2, y + bh / 2 - 9]; a2 = [x + 2, y + bh / 2 + 9]; tip = [h.x + 34, h.y + 6]; }
+  else if (top) { const bA = clamp(h.x - 6, x + 16, x + bw - 40); a1 = [bA, y + bh - 2]; a2 = [bA + 24, y + bh - 2]; tip = [h.x + 14, h.y - 66]; }
   else { const bA = side === 'left' ? x + bw - 46 : x + 22; a1 = [bA, y + bh - 2]; a2 = [bA + 24, y + bh - 2]; tip = [h.x + (side === 'left' ? -8 : 22), h.y - 62]; }
   ctx.beginPath(); ctx.moveTo(a1[0], a1[1]); ctx.lineTo(tip[0], tip[1]); ctx.lineTo(a2[0], a2[1]); ctx.closePath(); ctx.fillStyle = C.cream; ctx.fill();
   ctx.strokeStyle = C.ink; ctx.beginPath(); ctx.moveTo(a1[0], a1[1]); ctx.lineTo(tip[0], tip[1]); ctx.lineTo(a2[0], a2[1]); ctx.stroke();
@@ -1919,7 +1946,7 @@ function drawBanners() {
     const t = G.trick.t, a = t < 0.2 ? t / 0.2 : t > 1.4 ? Math.max(0, (1.7 - t) / 0.3) : 1;
     if (G.kind === 'trap') bigText(G.trick.name, 700, 128, 40, C.gold, a, 0.6 + 0.4 * Math.min(1, t / 0.2));
     else if (G.kind === 'vault') bigText(G.trick.name, 470, 215, 40, C.gold, a, 0.6 + 0.4 * Math.min(1, t / 0.2));
-    else bigText(G.trick.name, W / 2, G.kind === 'showdown' ? 205 : 64, 46, C.gold, a, 0.6 + 0.4 * Math.min(1, t / 0.2));
+    else bigText(G.trick.name, G.kind === 'showdown' ? W / 2 : 600, G.kind === 'showdown' ? 205 : 64, 46, C.gold, a, 0.6 + 0.4 * Math.min(1, t / 0.2));
   }
 }
 
@@ -2232,8 +2259,9 @@ function drawTrapScene() {
   drawBanners();
 }
 function drawFlightScene() {
-  drawBG(); drawFlightBackdrop(); drawTrickFX(); drawPirateShip(); drawPods(); drawShots(); drawRocket(false); drawShield(); drawParts();
-  drawBubble(pirateHead(), 'right'); drawBanners();
+  drawBG(); drawFlightBackdrop(); drawTrickFX(); drawPirateShip();
+  drawBubble(pirateHead(), 'top');
+  drawPods(); drawShots(); drawRocket(false); drawShield(); drawParts(); drawBanners();
 }
 function draw() {
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
@@ -2355,6 +2383,7 @@ const actMissions = act => MISSIONS.filter(m => m.act === act);
 function isUnlocked(m) {
   const p = P(); if (!p) return false;
   if (p.unlockAll || firstOfAct(m) && m.act.id === 1) return true;
+  if ((p.stars[m.id] || 0) > 0) return true;
   const prev = MISSIONS[m.gi - 1];
   return !!prev && (p.stars[prev.id] || 0) >= 2;
 }
@@ -2371,7 +2400,7 @@ function chipsHTML(m) {
   if (m.type === 'storm') return '<span class="chip tag">Word storm</span>';
   if (m.type === 'phrases') return '<span class="chip" style="--fc:var(--f-thumb)">SPACE</span><span class="chip tag">Phrases</span>';
   if (m.type === 'words') return '<span class="chip tag">Spelling words</span>';
-  return m.add.split('').map(k => '<span class="chip" style="--fc:var(' + FINGERS[keyFinger(k)].v + ')">' + keyLabel(k) + '</span>').join('') + ((m.type === 'mix' || m.type === 'learn') ? '<span class="chip tag">' + (m.add.includes('?') ? 'Sentences' : 'Words') + '</span>' : '');
+  return m.add.split('').map(k => '<span class="chip" style="--fc:var(' + FINGERS[keyFinger(k)].v + ')">' + keyLabel(k) + '</span>').join('') + ((m.type === 'mix' || m.type === 'learn') ? '<span class="chip tag">' + (m.tag || (m.add.includes('?') ? 'Sentences' : 'Words')) + '</span>' : '');
 }
 function starsHTML(n) { let s = ''; for (let i = 0; i < 3; i++) s += i < n ? '★' : '<span class="dim">★</span>'; return s; }
 function spellingWords() {
@@ -2469,8 +2498,7 @@ function renderHeader() {
   sel.innerHTML = SAVE.order.map(id => '<option value="' + id + '">' + escapeHTML(SAVE.profiles[id].name) + '</option>').join('');
   sel.value = SAVE.active || '';
   $('#captainSel').closest('.field').hidden = !SAVE.order.length;
-  const sp = P() && P().speed;
-  $('#speed').value = (sp === 'auto' || SPEEDS[sp]) ? sp : 'slow';
+  $('#speed').value = levelKey();
   $('#speed').closest('.field').hidden = !P();
   syncSound();
 }
@@ -2567,7 +2595,7 @@ function openBrief(m) {
   const wordChips = list => '<div class="bwords">' + list.map(w => '<span>' + escapeHTML(w) + '</span>').join('') + '</div>';
   if (m.type === 'keys' || m.type === 'mix' || m.type === 'learn') {
     keys = '<div class="bkeys">' + m.add.split('').map(capHTML).join('') + '</div>';
-    if (m.type !== 'keys') keys += wordChips(m.words.slice(0, 5));
+    if (m.type !== 'keys') keys += wordChips((m.sample || m.words).slice(0, 5));
   } else if (m.type === 'phrases') {
     keys = '<div class="bkeys"><div class="bkey" style="--fc:var(--f-thumb)"><span class="cap wide">SPACE</span><span class="bk-label">either thumb</span></div></div>' + wordChips(m.phrases.slice(3, 6));
   } else if (m.type === 'words' || m.type === 'storm') {
@@ -2625,7 +2653,7 @@ function showResults() {
   G.mode = 'results';
   const m = G.mission, p = P();
   const keys = G.correct + G.wrong, aim = keys ? G.correct / keys : 1, pct = Math.round(aim * 100);
-  const stars = aim >= 0.95 ? 3 : aim >= 0.9 ? 2 : 1;
+  const stars = aim >= 0.95 ? 3 : aim >= 0.85 ? 2 : 1;
   const wpm = G.typeT > 5 ? (G.correct / 5) / (G.typeT / 60) : 0;
   let prev = 0, medal = false, newMedal = false;
   if (!G.homework) {
@@ -2671,8 +2699,15 @@ function showResults() {
   }
   if (!G.homework && stars >= 2) html += medal ? ' <span class="new-best">' + (newMedal ? 'You earned the speed medal!' : 'Speed medal!') + '</span>' : ' The speed medal is at ' + m.act.medal + ' words a minute, if you want to try for it.';
   if (next && !nextOpen) html += ' Get 2 stars to unlock the next mission.';
+  if (!G.homework && G.kind === 'flight' && m.type !== 'keys' && stars === 3) {
+    const lk = levelKey();
+    if (lk === 'cadet' && wpm >= 8) html += ' <span class="new-best">Flying great! If missions feel easy, ask a grown-up about Pilot level (top of the page).</span>';
+    if (lk === 'pilot' && wpm >= 15) html += ' <span class="new-best">Ace pilot! Ask a grown-up about Ace level.</span>';
+  }
   $('#rTip').innerHTML = html;
-  $('#rTool').innerHTML = nextOpen ? [].concat(next.newTool || []).map(t => toolHTML(t, 'Unlocked for the next mission')).join('') : '';
+  const nextTools = nextOpen ? [].concat(next.newTool || []) : [];
+  $('#rTool').innerHTML = nextTools.length === 1 ? toolHTML(nextTools[0], 'Unlocked for the next mission')
+    : nextTools.length ? '<p class="unlocked"><span class="eyebrow">Unlocked for the next mission</span><br>' + nextTools.map(t => TOOLS[t].name).join(' and ') + '</p>' : '';
   const prim = $('#rPrimary');
   if (nextOpen) { prim.dataset.act = 'next'; prim.innerHTML = 'Next mission <kbd>Enter</kbd>'; show('#rAgain', true); }
   else if (isSd && stars >= 2) { prim.dataset.act = 'map'; prim.innerHTML = 'Mission map <kbd>Enter</kbd>'; show('#rAgain', true); }
@@ -2732,7 +2767,7 @@ $('#newForm').addEventListener('submit', e => {
   persist(); goMap();
 });
 $('#captainSel').addEventListener('change', e => { SAVE.active = e.target.value; persist(); goMap(); });
-$('#speed').addEventListener('change', e => { if (P()) { P().speed = e.target.value; persist(); } });
+$('#speed').addEventListener('change', e => { if (P() && LEVELS[e.target.value]) { P().level = e.target.value; persist(); } });
 $('#soundBtn').addEventListener('click', () => {
   SAVE.sound = !SAVE.sound; persist(); syncSound();
   if (SAVE.sound) { ensureAudio(); SFX.tick(); }
@@ -2835,6 +2870,7 @@ function start(data) {
     if (!SAVE.profiles[SAVE.active]) SAVE.active = SAVE.order[0] || null;
   }
   buildKeyboard(); buildHands();
+  if (/[?&]debug\b/.test(location.search)) window.__pp = {G, MISSIONS, P, LV};
   const hot = window.claude && window.claude.hot;
   if (hot && typeof hot.snapshot === 'function') hot.snapshot(() => ({save:SAVE}));
   if (P()) goMap(); else openNewCaptain();
