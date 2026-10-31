@@ -92,8 +92,10 @@ body.playing .cockpit{width:min(100%, max(340px, calc((100vh - 420px) * 2.1818))
 .new-cap .text-in{font-size:20px;padding:8px 12px;width:12em;max-width:100%}
 .form-note{font-size:13px;color:var(--muted)}
 /* Short laptop screens: briefing, results and pause cards float over the whole window instead of being squeezed into the game area. */
+@media (max-height:1000px) and (min-width:701px){
+  .overlay:not(.menu-ov):not(#ovNew){position:fixed;z-index:20}
+}
 @media (max-height:820px) and (min-width:701px){
-  .overlay:not(.menu-ov){position:fixed;z-index:20}
   .trainer .kb{--kw:clamp(26px,calc((100vw - 400px) / 13.2),41px)}
   .trainer .fingers{height:70px}
 }
@@ -218,6 +220,18 @@ body.playing .cockpit{width:min(100%, max(340px, calc((100vh - 420px) * 2.1818))
 .mcard.bonus{border-color:var(--gold)}
 .mcard.bonus .mnum{color:var(--gold)}
 .mcard.bonus .mstars{letter-spacing:0;font-size:14px}
+.aw-ic{font-size:15px;margin-left:5px;letter-spacing:0;vertical-align:-1px}
+.ribbons{margin-left:auto;display:inline-flex;gap:3px;align-self:center}
+.rib{font-size:10px;font-weight:700;min-width:20px;height:18px;border-radius:9px;padding:0 4px;display:inline-grid;place-items:center;color:var(--muted);border:1.5px solid var(--line);letter-spacing:.02em}
+.rib.on.r-cadet{background:var(--teal);border-color:var(--teal);color:var(--ink)}
+.rib.on.r-pilot{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+.rib.on.r-commander{background:var(--pink);border-color:var(--pink);color:var(--ink)}
+.award-row{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;font-weight:700;font-size:15px;margin:0}
+.award-row .aw{font-size:24px;line-height:1}
+.award-row .got{color:var(--gold)}
+.award-row .goal{color:var(--muted);font-weight:700}
+.best{margin:0;font-weight:700;color:var(--gold)}
+.ov-card.commander.gold{background:linear-gradient(160deg,#5a4512,var(--panel) 55%);border-color:var(--gold)}
 .mcard.is-next{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,208,92,.2)}
 .mcard.is-next .mnum{color:var(--gold)}
 .mcard.is-locked{opacity:.5;cursor:not-allowed}
@@ -309,11 +323,11 @@ body.playing .cockpit{width:min(100%, max(340px, calc((100vh - 420px) * 2.1818))
     <div class="controls">
       <label class="field" for="captainSel">Captain <select id="captainSel"></select></label>
       <button class="btn ghost small hide-play" id="newCapBtn" type="button">New captain</button>
-      <label class="field" for="speed">Level
+      <label class="field hide-play" for="speed">Level
         <select id="speed">
           <option value="cadet">Cadet (easiest)</option>
           <option value="pilot">Pilot</option>
-          <option value="ace">Ace (fastest)</option>
+          <option value="commander">Space Commander (hardest)</option>
         </select>
       </label>
       <button class="btn ghost small" id="soundBtn" type="button" aria-pressed="true">Sound on</button>
@@ -365,6 +379,7 @@ body.playing .cockpit{width:min(100%, max(340px, calc((100vh - 420px) * 2.1818))
           <div id="bTool"></div>
           <div id="bKeys"></div>
           <p id="bText"></p>
+          <p class="best" id="bBest" hidden></p>
           <div class="row">
             <button class="btn primary" id="bGo" type="button">I'm ready <kbd>Enter</kbd></button>
             <button class="btn ghost" id="bBack" type="button">Mission map</button>
@@ -394,6 +409,7 @@ body.playing .cockpit{width:min(100%, max(340px, calc((100vh - 420px) * 2.1818))
             <div><dt id="rCountLabel">Spuds splatted</dt><dd id="rSpuds">0</dd></div>
             <div><dt>Words a minute</dt><dd id="rWpm">0</dd></div>
           </dl>
+          <p class="award-row" id="rAward"></p>
           <p id="rTip"></p>
           <div id="rTool"></div>
           <div class="row">
@@ -408,7 +424,7 @@ body.playing .cockpit{width:min(100%, max(340px, calc((100vh - 420px) * 2.1818))
         <div class="ov-card commander">
           <div class="cm-head">
             <span class="cm-badge" aria-hidden="true"><i></i></span>
-            <div><span class="eyebrow">The Candy Vault is open</span><h2 id="cmTitle">Candy Commander</h2></div>
+            <div><span class="eyebrow" id="cmEyebrow">The Candy Vault is open</span><h2 id="cmTitle">Candy Commander</h2></div>
           </div>
           <p id="cmText"></p>
           <div class="stars" id="cmStars" aria-label="Stars"></div>
@@ -438,7 +454,7 @@ body.playing .cockpit{width:min(100%, max(340px, calc((100vh - 420px) * 2.1818))
     </div>
     <div class="map-head">
       <h2 class="section-title">Mission map</h2>
-      <p>Earn 2 stars to unlock the next mission. Stars come from aim, not speed.</p>
+      <p id="mapNote">Earn 2 stars to unlock the next mission. Stars come from aim, not speed.</p>
     </div>
     <div id="homework"></div>
     <div id="acts" class="map"></div>
@@ -453,8 +469,9 @@ body.playing .cockpit{width:min(100%, max(340px, calc((100vh - 420px) * 2.1818))
         <li>Act 1 goes one small step at a time: home-row keys a pair at a time, then all of them mixed, then the space bar with 2- and 3-letter words, then two-word phrases, then G H and E I. Act 2 adds R U T O N W Y. By the end of Act 2 the captain can type 75 of the 100 most common English words. Act 3 finishes the alphabet (C M P B V X Q Z), then capitals and the punctuation in real sentences: . , ' ?. Every new key goes the same way: single letters, then short words, then longer words, with phrases last.</li>
         <li>The right pinky rests on the ; key but is never asked to type it. Kids almost never need a semicolon, so those practice minutes go to letters.</li>
         <li>Shift is taught the standard way: hold it with the pinky on the opposite hand from the letter. If Caps Lock gets switched on by accident, the game still works and shows a reminder to turn it off.</li>
-        <li>Speed medals are optional extras for replays: 5, 8 and 12 words a minute in Acts 1, 2 and 3. They never block progress.</li>
-        <li>Level (top of the page) sets the pressure. Cadet sends one spud at a time and freezes it once the captain starts typing, so there's never a rush mid-word. Pilot allows two spuds and a little speed; Ace is fast. The results screen suggests moving up when missions look easy, but it's a grown-up's call.</li>
+        <li>Spud awards reward accuracy first, then speed: Bronze for passing (85% aim), Silver for 3 stars (95%), Golden for 3 stars at the act's speed pace (5, 8 and 12 words a minute in Acts 1 to 3), Diamond for a perfect mission at that pace. Speed never counts unless aim is high. Each briefing shows the captain's best speed on that mission to beat; only runs with 2 or more stars count as a best.</li>
+        <li>Level (top of the page, changed between missions) sets the pressure. Cadet sends one spud at a time and freezes it once typing starts. Pilot sends word spuds one at a time but they keep crawling, with shorter letter warm-ups. Space Commander sends several spuds that keep coming, mostly words. Each level keeps its own stars, awards and ribbons, and a mission opens on a harder level once it's beaten on the level below.</li>
+        <li>A good rhythm: learn each act on Cadet, then replay it on Pilot when the results screen says he's ready (2 of his last 3 word missions at 95% aim and 8 words a minute). Speed practice on familiar keys, new keys without pressure.</li>
         <li>Each key and the finger that presses it share a color. As a key gets reliable, its hints fade so eyes stay on the screen. A mistake brings the hint back for a few tries.</li>
         <li>Keys the captain misses most come back more often. After the finale, Candy Runs mix words from every mission and lean on the captain's weakest keys, which makes them good daily practice.</li>
         <li>Stars reward aim: 3 at 95% or better, 2 at 85%, and 2 stars unlock the next mission. A mission the captain has already played stays open. Missed spuds never end a mission; they return later.</li>
@@ -773,7 +790,7 @@ const SAVE_KEY = 'pp2-save';
 let SAVE = {v:2, sound:true, active:null, order:[], profiles:{}};
 function newProfile(name) {
   const id = 'c' + Date.now().toString(36) + Math.floor(Math.random() * 1e5).toString(36);
-  return {id, name, level:'cadet', stars:{}, medals:{}, wpm:{}, recent:[], unlockAll:false, keys:{}, time:{}, spelling:'', hintsAlways:false, flown:0, candy:{runs:0, best:0}, ids2:true};
+  return {id, name, level:'cadet', prog:emptyProg(), stars:{}, medals:{}, wpm:{}, recent:[], hist:[], unlockAll:false, keys:{}, time:{}, spelling:'', hintsAlways:false, flown:0, candy:{runs:0, best:0}, ids2:true};
 }
 /* Mission ids used to be "act-number" (e.g. "2-1"); they are now names, so reordering missions can't scramble saved stars. */
 const OLD_IDS = {'1-1':'launch-pad','1-2':'above-the-clouds','1-3':'into-orbit','1-4':'first-words','1-5':'satellite-slalom','1-7':'moon-showdown',
@@ -785,8 +802,18 @@ function migrateIds(map) {
   return out;
 }
 function normalizeProfile(p) {
-  p = Object.assign({level:'cadet', stars:{}, medals:{}, wpm:{}, recent:[], unlockAll:false, keys:{}, time:{}, spelling:'', hintsAlways:false, flown:0, candy:{runs:0, best:0}}, p);
+  p = Object.assign({level:'cadet', stars:{}, medals:{}, wpm:{}, recent:[], hist:[], unlockAll:false, keys:{}, time:{}, spelling:'', hintsAlways:false, flown:0, candy:{runs:0, best:0}}, p);
   if (!p.ids2) { p.stars = migrateIds(p.stars); p.medals = migrateIds(p.medals); p.wpm = migrateIds(p.wpm); p.ids2 = true; }
+  /* Progress per level. Saves from before levels existed become Cadet progress. */
+  if (!p.prog) {
+    const prog = emptyProg(), aw = {};
+    for (const id in p.stars) { const st = p.stars[id]; if (st >= 2) aw[id] = st === 3 ? (p.medals[id] ? 3 : 2) : 1; }
+    Object.assign(prog.cadet, {stars:Object.assign({}, p.stars), wpm:Object.assign({}, p.wpm), awards:aw});
+    p.prog = prog;
+  }
+  LEVEL_ORDER.forEach(lv => { p.prog[lv] = Object.assign({stars:{}, wpm:{}, awards:{}}, p.prog[lv] || {}); });
+  if (p.level === 'ace') p.level = 'commander';
+  if (!LEVELS[p.level]) p.level = 'cadet';
   return p;
 }
 const P = () => SAVE.profiles[SAVE.active] || null;
@@ -806,7 +833,7 @@ function fillName(t) {
   const n = typeableName(); return n ? t.replace(/\{name\}/g, n) : null;
 }
 const fillLines = list => list.map(fillName).filter(Boolean);
-const allDone = () => { const p = P(); return !!p && MISSIONS.every(m => (p.stars[m.id] || 0) >= 2); };
+const allDone = () => { const p = P(); return !!p && MISSIONS.every(m => beat(p, m.id)); };
 const fmt = t => t.replace(/\{name\}/g, capName());
 function dateKey(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 
@@ -814,10 +841,23 @@ function dateKey(d) { d = d || new Date(); return d.getFullYear() + '-' + String
    pods: most spuds on screen at once. started: how fast a spud keeps moving once the captain starts typing it
    (0 = it freezes and waits). ramp: how much spuds may speed up during a streak. */
 const LEVELS = {
-  cadet:{name:'Cadet', letter:10, per:4.5, pods:1, started:0, ramp:1},
-  pilot:{name:'Pilot', letter:9, per:1.8, pods:2, started:0.25, ramp:1.15, onePhrase:true},
-  ace:{name:'Ace', letter:6.5, per:1.3, pods:3, started:1, ramp:1.35}
+  cadet:{name:'Cadet', short:'C', letter:8, per:1.0, pods:1, wordPods:1, started:0, ramp:1, warm:1},
+  pilot:{name:'Pilot', short:'P', letter:7, per:1.0, pods:2, wordPods:1, started:0.25, ramp:1.1, warm:0.5},
+  commander:{name:'Space Commander', short:'SC', letter:6, per:1.0, pods:3, wordPods:2, started:0.6, ramp:1.3, warm:0}
 };
+const LEVEL_ORDER = ['cadet', 'pilot', 'commander'];
+const emptyProg = () => ({cadet:{stars:{}, wpm:{}, awards:{}}, pilot:{stars:{}, wpm:{}, awards:{}}, commander:{stars:{}, wpm:{}, awards:{}}});
+const LP = (p, lv) => p.prog[lv || levelKey()];
+const beat = (p, id, lv) => ((LP(p, lv).stars[id]) || 0) >= 2;
+const beatAny = (p, id) => LEVEL_ORDER.some(lv => beat(p, id, lv));
+/* Awards: accuracy first, then speed at the act's pace. */
+const AWARDS = [null, {icon:'\u{1F949}', name:'Bronze Spud'}, {icon:'\u{1F948}', name:'Silver Spud'}, {icon:'\u{1F947}', name:'Golden Spud'}, {icon:'\u{1F48E}', name:'Diamond Spud'}];
+function awardTier(stars, perfect, wpm, pace) {
+  if (stars < 2) return 0;
+  if (perfect && wpm >= pace) return 4;
+  if (stars === 3 && wpm >= pace) return 3;
+  return stars === 3 ? 2 : 1;
+}
 const MAXPODS = { keys:[2,3,3], mix:[2,2,3], learn:[2,2,3], phrases:[1,1,2], words:[1,2,2], combo:[2,3,3], storm:[2,3,3], candy:[2,2,3] };
 function recentWpm() { const r = ((P() && P().recent) || []).slice(-3); return r.length ? r.reduce((a, b) => a + b, 0) / r.length : 0; }
 function levelKey() { const p = P(); return p && LEVELS[p.level] ? p.level : 'cadet'; }
@@ -1020,17 +1060,18 @@ function buildQueue(m) {
     /* Easy to hard: single letters for the new keys, reach drills, words shortest first, phrases last. */
     const freshL = fresh.filter(ch => /^[a-z]$/.test(ch));
     const reviewL = m.pool.filter(k => /^[a-z]$/.test(k) && !freshL.includes(k));
-    const nL = m.letters != null ? m.letters : (freshL.length ? 6 : 0);
+    const warm = LV().warm;
+    const nL = Math.round((m.letters != null ? m.letters : (freshL.length ? 6 : 0)) * warm);
     const q = [];
     freshL.forEach(k => { if (q.length < nL) q.push(k); });
     while (q.length < nL) q.push(pickLetter(freshL, reviewL, q));
-    q.push(...(m.drills || []));
+    if (warm > 0) q.push(...(m.drills || []));
     const pat = m.pattern || 'wwwpwwwpwwwp';
     const nP = [...pat].filter(c => c === 'p').length, nW = pat.length - nP;
     const next = wordPicker(m, fresh), byLen = (a, b) => a.length - b.length;
     const ph = shuffle(fillLines(m.phrases || [])).slice(0, nP).sort(byLen);
     let words = [];
-    for (let i = 0; i < nW + (nP - ph.length); i++) words.push(next());
+    for (let i = 0; i < nW + (nP - ph.length) + (warm === 0 ? 3 : 0); i++) words.push(next());
     words.sort(byLen);
     if (m.trail) words = words.map(w => w + m.trail);
     q.push(...words, ...ph);
@@ -1128,7 +1169,7 @@ function bonk(pod) {
   removePod(pod);
   G.queue.push(pod.target);
   if (G.lock === pod.id) G.lock = null;
-  G.rocket.shake = 0.6; G.streak = 0; G.speedF = Math.max(0.6, G.speedF * 0.85);
+  G.rocket.shake = 0.6; G.streak = 0; G.speedF = Math.max(0.6, G.speedF * 0.85); G.bonks = (G.bonks || 0) + 1;
   burst(q.x, q.y, [C.potato, C.potatoDark], 12, 160);
   floatText('BONK!', q.x, q.y - 34, C.mars, 32);
   SFX.bonk();
@@ -1457,17 +1498,18 @@ const isPhrase = t => t.trim().includes(' ');
 function updatePlay(dt) {
   const lv = LV(), liveList = livePods(), live = liveList.length;
   const type = G.mission.type;
-  const max = Math.min(lv.pods, (MAXPODS[type] || MAXPODS.keys)[2]);
+  const wordy = (G.queue.length && G.queue[0].length > 1) || liveList.some(pd => pd.target.length > 1);
+  const max = Math.min(wordy ? lv.wordPods : lv.pods, (MAXPODS[type] || MAXPODS.keys)[2]);
   G.spawnT -= dt;
   if (live === 0) G.spawnT = Math.min(G.spawnT, 0.7);
-  /* Pilot: never two phrases on screen together. */
-  const phraseBusy = lv.onePhrase && live > 0 && G.queue.length && (isPhrase(G.queue[0]) || liveList.some(pd => isPhrase(pd.target)));
+  /* Never two phrases on screen together, on any level. */
+  const phraseBusy = live > 0 && G.queue.length && (isPhrase(G.queue[0]) || liveList.some(pd => isPhrase(pd.target)));
   if (G.queue.length && live < max && G.spawnT <= 0 && !phraseBusy) {
     const t = spawnPod();
     G.spawnT = podDuration(t) * 0.45;
   }
   const slow = G.sugarT > 0 ? 0.7 : 1;
-  /* Once the captain starts typing a spud it freezes (Cadet) or crawls (Pilot). */
+  /* Once the captain starts typing a spud it freezes (Cadet), crawls (Pilot) or slows (Space Commander). */
   for (const pod of G.pods) if (!pod.doomed) pod.p += dt * slow * (pod.typed > 0 ? lv.started : 1) / pod.dur;
   for (const pod of G.pods.slice()) if (!pod.doomed && pod.p >= 1) bonk(pod);
 }
@@ -2196,7 +2238,7 @@ function drawVaultScene() {
   if (G.bubble && G.bubble.who === 'pirate') drawBubble(vaultPirateAnchor(sd), 'right');
   else drawBubble({x: VAULT_X + 84, y: VAULT_Y - 30}, 'right');
   drawBanners();
-  if (G.mode === 'finale' && G.finT > 3.2) bigText('THE CANDY VAULT!', 600, 70, 46, C.gold, Math.min(1, (G.finT - 3.2) * 3), 1 + 0.04 * Math.sin(G.time * 6));
+  if (G.mode === 'finale' && G.finT > 3.2) bigText(levelKey() === 'commander' ? 'GOLDEN CANDY VAULT!' : 'THE CANDY VAULT!', 600, 70, 46, C.gold, Math.min(1, (G.finT - 3.2) * 3), 1 + 0.04 * Math.sin(G.time * 6));
 }
 function drawShowdownScene() {
   drawBG();
@@ -2383,13 +2425,15 @@ const actMissions = act => MISSIONS.filter(m => m.act === act);
 function isUnlocked(m) {
   const p = P(); if (!p) return false;
   if (p.unlockAll || firstOfAct(m) && m.act.id === 1) return true;
-  if ((p.stars[m.id] || 0) > 0) return true;
+  const st = LP(p).stars, i = LEVEL_ORDER.indexOf(levelKey());
+  if ((st[m.id] || 0) > 0) return true;
+  if (i > 0 && beat(p, m.id, LEVEL_ORDER[i - 1])) return true;
   const prev = MISSIONS[m.gi - 1];
-  return !!prev && (p.stars[prev.id] || 0) >= 2;
+  return !!prev && (st[prev.id] || 0) >= 2;
 }
 function nextMission() {
   const p = P();
-  for (const m of MISSIONS) if (isUnlocked(m) && (p.stars[m.id] || 0) < 2) return m;
+  for (const m of MISSIONS) if (isUnlocked(m) && !beat(p, m.id)) return m;
   return MISSIONS[MISSIONS.length - 1];
 }
 function chipsHTML(m) {
@@ -2414,16 +2458,16 @@ function renderRoute() {
   const stops = [['Earth', 'var(--earth)', ''], ['Moon', 'var(--moon)', ''], ['Asteroid', 'var(--rock)', ' rock'], ['Mars', 'var(--mars)', ' vault']];
   let html = '';
   stops.forEach((s, i) => {
-    html += '<div class="stop' + s[2] + (s[0] === 'Mars' && (p.stars[VAULT_M().id] || 0) >= 2 ? ' open' : '') + '"><span class="ball" style="--bc:' + s[1] + '"></span><span>' + s[0] + (s[0] === 'Mars' ? '<br>Candy Vault' : '') + '</span></div>';
+    html += '<div class="stop' + s[2] + (s[0] === 'Mars' && beatAny(p, VAULT_M().id) ? ' open' : '') + '"><span class="ball" style="--bc:' + s[1] + '"></span><span>' + s[0] + (s[0] === 'Mars' ? '<br>Candy Vault' : '') + '</span></div>';
     if (i < 3) {
       const act = ACTS[i];
       let fill = 0, label = 'next update';
-      if (act.missions) { const ms = actMissions(act), d = ms.filter(m => (p.stars[m.id] || 0) >= 2).length; fill = d / ms.length; label = d + ' of ' + ms.length; }
+      if (act.missions) { const ms = actMissions(act), d = ms.filter(m => beat(p, m.id)).length; fill = d / ms.length; label = d + ' of ' + ms.length; }
       html += '<div class="leg' + (nx.act === act && fill < 1 ? ' current' : '') + '"><div class="track"><div class="fill" style="width:' + Math.round(fill * 100) + '%"></div></div><small>' + label + '</small></div>';
     }
   });
   $('#route').innerHTML = html;
-  const all = MISSIONS.every(m => (p.stars[m.id] || 0) >= 2);
+  const all = allDone();
   $('#here').innerHTML = all ? '<b>Candy Commander ' + escapeHTML(capName()) + '!</b> Every mission is done and the Candy Vault is open. Try a Candy Run, or go back for 3 stars and speed medals.'
     : 'Next stop: <b>' + nx.name + '</b> · Act ' + nx.act.id + ', ' + nx.act.name;
 }
@@ -2437,13 +2481,16 @@ function renderMap() {
       return '<div class="act"><h3><b>Act ' + act.id + ' · ' + act.name + '</b></h3><div class="soon"><span class="eyebrow">' + act.soon + '</span><ul>' + act.teaser.map(t => '<li>' + t + '</li>').join('') + '</ul></div></div>';
     }
     const ms = actMissions(act);
-    const done = ms.filter(m => (p.stars[m.id] || 0) >= 2).length;
-    return '<div class="act"><h3><b>Act ' + act.id + ' · ' + act.name + '</b><span>' + done + ' of ' + ms.length + ' missions done</span></h3><div class="cards">' + ms.map(m => {
-      const open = isUnlocked(m), st = p.stars[m.id] || 0;
+    const done = ms.filter(m => beat(p, m.id)).length;
+    return '<div class="act"><h3><b>Act ' + act.id + ' · ' + act.name + '</b><span>' + done + ' of ' + ms.length + ' missions done on ' + LV().name + '</span></h3><div class="cards">' + ms.map(m => {
+      const open = isUnlocked(m), st = LP(p).stars[m.id] || 0, aw = LP(p).awards[m.id] || 0;
+      const ribs = '<span class="ribbons">' + LEVEL_ORDER.map(lv => '<span class="rib r-' + lv + (beat(p, m.id, lv) ? ' on' : '') + '" title="' + LEVELS[lv].name + (beat(p, m.id, lv) ? ': beaten' : ': not yet') + '">' + LEVELS[lv].short + '</span>').join('') + '</span>';
+      const lower = LEVEL_ORDER[LEVEL_ORDER.indexOf(levelKey()) - 1];
       const cls = 'mcard' + (open ? '' : ' is-locked') + (m === nx && open && !allDone() ? ' is-next' : '') + (m.type === 'showdown' || m.type === 'vault' ? ' boss' : '');
       const prev = MISSIONS[m.gi - 1];
-      const sub = open ? '<span class="mstars" aria-label="' + st + ' of 3 stars">' + starsHTML(st) + (p.medals[m.id] ? '<span class="medal">MEDAL</span>' : '') + '</span>' : '<span class="mlock">Get 2★ on ' + (prev ? prev.name : 'the last mission') + '</span>';
-      return '<button type="button" class="' + cls + '" data-gi="' + m.gi + '"' + (open ? '' : ' aria-disabled="true"') + '><span class="mnum">' + m.num + '</span><span class="mname">' + m.name + '</span>' + sub + '<span class="chips">' + chipsHTML(m) + '</span></button>';
+      const sub = open ? '<span class="mstars" aria-label="' + st + ' of 3 stars' + (aw ? ', ' + AWARDS[aw].name : '') + '">' + starsHTML(st) + (aw ? '<span class="aw-ic" title="' + AWARDS[aw].name + '">' + AWARDS[aw].icon + '</span>' : '') + '</span>'
+        : '<span class="mlock">' + (lower ? 'Beat it on ' + LEVELS[lower].name + ' first' : 'Get 2★ on ' + (prev ? prev.name : 'the last mission')) + '</span>';
+      return '<button type="button" class="' + cls + '" data-gi="' + m.gi + '"' + (open ? '' : ' aria-disabled="true"') + '><span class="mnum">' + m.num + '</span><span class="mname">' + m.name + '</span>' + sub + '<span class="chips">' + chipsHTML(m) + ribs + '</span></button>';
     }).join('') + '</div></div>';
   }).join('') + bonusHTML(p);
   const words = spellingWords();
@@ -2453,13 +2500,14 @@ function renderMap() {
   $('#mName').textContent = done ? 'Candy Run' : 'Act ' + nx.act.id + ' · ' + nx.num + ' · ' + nx.name;
   $('#mKeys').innerHTML = done ? '<span class="chip tag vault">Every key</span>' : chipsHTML(nx);
   $('#mGo').innerHTML = (done ? 'Candy Run' : nx.type === 'showdown' ? 'Land on ' + PLACE[nx.act.dest] : nx.type === 'vault' ? 'Open the vault' : 'Launch') + ' <kbd>Enter</kbd>';
+  $('#mapNote').innerHTML = 'Showing <b>' + LV().name + '</b> progress. Earn 2 stars to unlock the next mission. Stars come from aim, not speed.';
   $('#unlockBtn').textContent = p.unlockAll ? 'All missions unlocked' : 'Unlock all missions';
   $('#unlockBtn').disabled = !!p.unlockAll;
 }
 
 const PLACE = {Moon:'the Moon', Asteroid:'the asteroid', Mars:'Mars'};
 function bonusHTML(p) {
-  const vm = VAULT_M(), opened = (p.stars[vm.id] || 0) >= 2, cd = p.candy || {runs:0, best:0};
+  const vm = VAULT_M(), opened = beatAny(p, vm.id), cd = p.candy || {runs:0, best:0};
   return '<div class="act"><h3><b>Bonus · The Candy Vault</b><span>' + (opened ? 'Open! Come back any time.' : 'Opens after Act 3') + '</span></h3><div class="cards">' +
     '<button type="button" class="mcard bonus' + (opened ? '' : ' is-locked') + '" data-bonus="candy"' + (opened ? '' : ' aria-disabled="true"') + '><span class="mnum">★</span><span class="mname">Candy Run</span>' +
     (opened ? '<span class="mstars">' + (cd.runs ? 'Best: ' + Math.round(cd.best) + ' wpm' : 'Every key, every word') + '</span>' : '<span class="mlock">Open the Candy Vault first</span>') +
@@ -2477,7 +2525,7 @@ function renderLog() {
   const today = Math.round((p.time[dateKey()] || 0) / 60);
   let week = 0, days = 0;
   for (let i = 0; i < 7; i++) { const d = new Date(); d.setDate(d.getDate() - i); const s = p.time[dateKey(d)] || 0; if (s > 30) days++; week += s; }
-  const doneCount = MISSIONS.filter(m => (p.stars[m.id] || 0) >= 2).length;
+  const doneCount = MISSIONS.filter(m => beat(p, m.id)).length;
   $('#logStats').innerHTML =
     '<div><dt>Today</dt><dd>' + today + ' min</dd></div>' +
     '<div><dt>Last 7 days</dt><dd>' + Math.round(week / 60) + ' min · ' + days + (days === 1 ? ' day' : ' days') + '</dd></div>' +
@@ -2550,15 +2598,20 @@ function capHTML(k) {
 function showCommander(stars, fresh) {
   const p = P(), name = capName();
   G.mode = fresh ? 'results' : 'commander';
-  const ms = MISSIONS, done = ms.filter(m => (p.stars[m.id] || 0) >= 2).length;
-  const starSum = ms.reduce((a, m) => a + (p.stars[m.id] || 0), 0);
-  const medals = ms.filter(m => p.medals[m.id]).length;
-  const best = Math.max(0, ...ms.map(m => p.wpm[m.id] || 0));
-  $('#cmTitle').textContent = 'Candy Commander ' + name;
-  $('#cmText').textContent = (name === 'Captain' ? 'You' : 'Captain ' + name) + " beat the Potato Pirate to Mars and opened the Candy Vault. That's the whole keyboard: 26 letters, capitals, and . , ' ? too.";
+  const lp = LP(p), lk = levelKey(), gold = lk === 'commander';
+  const ms = MISSIONS, done = ms.filter(m => beat(p, m.id)).length;
+  const starSum = ms.reduce((a, m) => a + (lp.stars[m.id] || 0), 0);
+  const golds = ms.filter(m => (lp.awards[m.id] || 0) >= 3).length;
+  const best = Math.max(0, ...ms.map(m => lp.wpm[m.id] || 0));
+  document.querySelector('#ovCommander .ov-card').classList.toggle('gold', gold);
+  $('#cmEyebrow').textContent = 'The Candy Vault is open · ' + LV().name + ' level';
+  $('#cmTitle').textContent = (gold ? 'Space Commander ' : 'Candy Commander ') + name;
+  $('#cmText').textContent = (name === 'Captain' ? 'You' : 'Captain ' + name) + (gold
+    ? " beat the Potato Pirate on the hardest level and opened the Golden Candy Vault. That's legendary typing."
+    : " beat the Potato Pirate to Mars on " + LV().name + " and opened the Candy Vault. That's the whole keyboard: 26 letters, capitals, and . , ' ? too.");
   $('#cmStars').hidden = stars == null;
   if (stars != null) { $('#cmStars').innerHTML = [0, 1, 2].map(n => '<span class="' + (n < stars ? 'on' : '') + '">★</span>').join(''); $('#cmStars').setAttribute('aria-label', stars + ' of 3 stars'); }
-  $('#cmStats').innerHTML = '<div><dt>Missions</dt><dd>' + done + ' of ' + ms.length + '</dd></div><div><dt>Stars</dt><dd>' + starSum + ' of ' + ms.length * 3 + '</dd></div><div><dt>Speed medals</dt><dd>' + medals + '</dd></div><div><dt>Best speed</dt><dd>' + Math.round(best) + ' wpm</dd></div>';
+  $('#cmStats').innerHTML = '<div><dt>Missions</dt><dd>' + done + ' of ' + ms.length + '</dd></div><div><dt>Stars</dt><dd>' + starSum + ' of ' + ms.length * 3 + '</dd></div><div><dt>Golden Spuds</dt><dd>' + golds + '</dd></div><div><dt>Best speed</dt><dd>' + Math.round(best) + ' wpm</dd></div>';
   $('#cmNote').textContent = "The pirate is upside down in the gumdrops. He seems happy. The vault stays open for Candy Runs: every word you've learned, with extra practice on your trickiest keys.";
   only('#ovCommander');
   $('#cmRun').focus({preventScroll:true});
@@ -2611,6 +2664,9 @@ function openBrief(m) {
   }
   $('#bKeys').innerHTML = keys;
   $('#bText').textContent = m.text;
+  const bp = !G.homework && P() ? LP(P()) : null, bestW = bp ? bp.wpm[m.id] || 0 : 0, bestA = bp ? bp.awards[m.id] || 0 : 0;
+  $('#bBest').hidden = !(bestW || bestA);
+  $('#bBest').textContent = 'Your best here on ' + LV().name + ': ' + (bestA ? AWARDS[bestA].icon + ' ' + AWARDS[bestA].name + (bestW ? ', ' : '') : '') + (bestW ? Math.round(bestW) + ' words a minute' : '') + '. Beat it!';
   $('#bGo').innerHTML = (G.kind === 'showdown' ? 'Grab the candy cane' : G.kind === 'trap' ? 'Start the taunts' : G.kind === 'vault' ? 'Knock on the door' : "I'm ready") + ' <kbd>Enter</kbd>';
   setPool(m.pool, m.add);
   lastCueKey = '';
@@ -2622,7 +2678,7 @@ function startMission() {
   ensureAudio();
   const m = G.mission;
   resetScene();
-  Object.assign(G, {done:0, correct:0, wrong:0, streak:0, best:0, misses:{}, lock:null, speedF:1, spawnT:0, megaFired:false, paused:false, lastLane:-999, goT:0, tempHint:{}, typeT:0});
+  Object.assign(G, {done:0, correct:0, wrong:0, streak:0, best:0, misses:{}, lock:null, speedF:1, spawnT:0, megaFired:false, paused:false, lastLane:-999, goT:0, tempHint:{}, typeT:0, bonks:0});
   if (G.kind === 'showdown') { startShowdownScene(m); G.total = G.sd.lines.length; G.queue = []; G.goText = 'CANDY CANE TIME!'; }
   else if (G.kind === 'trap') { startTrapScene(m); G.total = G.sd.lines.length; G.queue = []; G.goText = 'LURE HIM IN!'; }
   else if (G.kind === 'vault') { startVaultScene(m); G.total = G.sd.lines.length; G.queue = []; G.goText = 'KNOCK KNOCK!'; }
@@ -2655,12 +2711,17 @@ function showResults() {
   const keys = G.correct + G.wrong, aim = keys ? G.correct / keys : 1, pct = Math.round(aim * 100);
   const stars = aim >= 0.95 ? 3 : aim >= 0.85 ? 2 : 1;
   const wpm = G.typeT > 5 ? (G.correct / 5) / (G.typeT / 60) : 0;
-  let prev = 0, medal = false, newMedal = false;
+  let prev = 0, prevBest = 0, prevTier = 0, tier = 0;
+  const wpm1 = Math.round(wpm * 10) / 10, lk = levelKey(), wordMission = G.kind === 'flight' && m.type !== 'keys';
   if (!G.homework) {
-    prev = p.stars[m.id] || 0; if (stars > prev) p.stars[m.id] = stars;
-    p.recent = (p.recent || []).concat([Math.round(wpm * 10) / 10]).slice(-10);
-    p.wpm[m.id] = Math.max(p.wpm[m.id] || 0, Math.round(wpm * 10) / 10);
-    if (stars >= 2 && wpm >= m.act.medal) { medal = true; newMedal = !p.medals[m.id]; p.medals[m.id] = true; }
+    const lp = LP(p);
+    prev = lp.stars[m.id] || 0; if (stars > prev) lp.stars[m.id] = stars;
+    p.recent = (p.recent || []).concat([wpm1]).slice(-10);
+    prevBest = lp.wpm[m.id] || 0;
+    if (stars >= 2 && wpm1 > prevBest) lp.wpm[m.id] = wpm1;
+    tier = awardTier(stars, G.wrong === 0 && G.correct > 0, wpm, m.act.medal);
+    prevTier = lp.awards[m.id] || 0; if (tier > prevTier) lp.awards[m.id] = tier;
+    p.hist = (p.hist || []).concat([{a:Math.round(aim * 1000) / 1000, w:wpm1, word:wordMission, lv:lk, b:G.bonks || 0}]).slice(-12);
   }
   if (m.type === 'candy') {
     p.candy = p.candy || {runs:0, best:0};
@@ -2697,13 +2758,25 @@ function showResults() {
     const wi = keyInfo(worst[0]);
     html += ' Trickiest key: <b>' + escapeHTML(wi.shift ? 'SHIFT + ' + keyLabel(wi.base) : keyLabel(worst[0])) + '</b>. ' + (wi.shift ? 'Hold SHIFT with the pinky on the other hand.' : 'That one belongs to your ' + FINGERS[FMAP[wi.base] || 'th'].label + '.');
   }
-  if (!G.homework && stars >= 2) html += medal ? ' <span class="new-best">' + (newMedal ? 'You earned the speed medal!' : 'Speed medal!') + '</span>' : ' The speed medal is at ' + m.act.medal + ' words a minute, if you want to try for it.';
   if (next && !nextOpen) html += ' Get 2 stars to unlock the next mission.';
-  if (!G.homework && G.kind === 'flight' && m.type !== 'keys' && stars === 3) {
-    const lk = levelKey();
-    if (lk === 'cadet' && wpm >= 8) html += ' <span class="new-best">Flying great! If missions feel easy, ask a grown-up about Pilot level (top of the page).</span>';
-    if (lk === 'pilot' && wpm >= 15) html += ' <span class="new-best">Ace pilot! Ask a grown-up about Ace level.</span>';
+  let award = '';
+  if (!G.homework) {
+    const best = Math.max(tier, prevTier), pace = m.act.medal;
+    if (tier) award += '<span class="aw">' + AWARDS[tier].icon + '</span><span class="got">' + (tier > prevTier ? 'New: ' + AWARDS[tier].name + '!' : AWARDS[tier].name) + '</span>';
+    if (stars >= 2 && prevBest > 0 && wpm1 > prevBest) award += '<span class="got">New record: ' + Math.round(wpm) + ' wpm (best was ' + Math.round(prevBest) + ')</span>';
+    award += '<span class="goal">' + (best < 1 ? 'Next: ' + AWARDS[1].icon + ' Bronze Spud at 85% aim'
+      : best < 2 ? 'Next: ' + AWARDS[2].icon + ' Silver Spud at 95% aim'
+      : best < 3 ? 'Next: ' + AWARDS[3].icon + ' Golden Spud: 3 stars at ' + pace + ' wpm'
+      : best < 4 ? 'Next: ' + AWARDS[4].icon + ' Diamond Spud: a perfect mission at ' + pace + ' wpm'
+      : 'Every Spud earned here on ' + LV().name + '!') + '</span>';
+    /* Level nudges: move up only after a steady run of accurate, quick word missions; offer Cadet when a level is too much. */
+    const up = lk === 'cadet' ? {w:8, to:'Pilot'} : lk === 'pilot' ? {w:15, to:'Space Commander'} : null;
+    const recentWords = (p.hist || []).filter(h => h.word && h.lv === lk).slice(-3);
+    if (lk !== 'cadet' && (aim < 0.85 || (G.bonks || 0) >= 3)) html += ' <span class="new-best">Tough level? Cadet is always there. Slow with the right fingers is the fastest way to get better.</span>';
+    else if (up && wordMission && recentWords.filter(h => h.a >= 0.95 && h.w >= up.w).length >= 2) html += ' <span class="new-best">Ready for ' + up.to + '! Ask a grown-up to switch the Level, then replay this act for new ribbons.</span>';
   }
+  $('#rAward').innerHTML = award;
+  $('#rAward').hidden = !award;
   $('#rTip').innerHTML = html;
   const nextTools = nextOpen ? [].concat(next.newTool || []) : [];
   $('#rTool').innerHTML = nextTools.length === 1 ? toolHTML(nextTools[0], 'Unlocked for the next mission')
@@ -2767,7 +2840,11 @@ $('#newForm').addEventListener('submit', e => {
   persist(); goMap();
 });
 $('#captainSel').addEventListener('change', e => { SAVE.active = e.target.value; persist(); goMap(); });
-$('#speed').addEventListener('change', e => { if (P() && LEVELS[e.target.value]) { P().level = e.target.value; persist(); } });
+$('#speed').addEventListener('change', e => {
+  if (!P() || !LEVELS[e.target.value]) return;
+  P().level = e.target.value; persist();
+  if (G.mode === 'menu') goMap(); else renderAll();
+});
 $('#soundBtn').addEventListener('click', () => {
   SAVE.sound = !SAVE.sound; persist(); syncSound();
   if (SAVE.sound) { ensureAudio(); SFX.tick(); }
@@ -2790,7 +2867,7 @@ $('#confirmNo').addEventListener('click', () => { show('#confirmBox', false); co
 $('#confirmYes').addEventListener('click', () => { show('#confirmBox', false); if (confirmAction) confirmAction(); confirmAction = null; });
 $('#resetBtn').addEventListener('click', () => askConfirm('Erase all stars and key stats for ' + capName() + '?', () => {
   const p = P(); if (!p) return;
-  Object.assign(p, {stars:{}, medals:{}, wpm:{}, recent:[], unlockAll:false, keys:{}, time:{}, flown:0, candy:{runs:0, best:0}}); persist(); renderAll();
+  Object.assign(p, {prog:emptyProg(), stars:{}, medals:{}, wpm:{}, recent:[], hist:[], unlockAll:false, keys:{}, time:{}, flown:0, candy:{runs:0, best:0}}); persist(); renderAll();
 }));
 $('#removeBtn').addEventListener('click', () => askConfirm('Remove ' + capName() + ' and all their progress?', () => {
   const id = SAVE.active; if (!id) return;

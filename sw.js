@@ -1,7 +1,7 @@
 /* Potato Pirate offline support.
    Pages: network first, so updates show up right away; the saved copy is used when offline.
    Fonts: saved after the first visit so the game looks the same offline. */
-const CACHE = 'potato-pirate-v5';
+const CACHE = 'potato-pirate-v6';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './classic/'];
 
 self.addEventListener('install', e => {
